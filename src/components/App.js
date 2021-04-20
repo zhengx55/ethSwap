@@ -4,11 +4,12 @@ import EthSwap from '../abis/EthSwap.json';
 import Token from '../abis/Token.json';
 import Web3 from 'web3';
 import Navbar from './NavBar';
+import Form from './Main';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { account:'', ethBalance:'0', tokenBalance:'0', token:{}, ether:{} }
+    this.state = { account:'', loading: true, ethBalance:'0', tokenBalance:'0', token:{}, ether:{} }
   }
 
   // connect App to BlockChain -web3.js
@@ -42,6 +43,7 @@ class App extends Component {
       const ether = new web3.eth.Contract(EthSwap.abi, ethSwapData.address);
       this.setState({ether});
     }
+    this.setState({ loading: false });
   }
 
   async loadWeb3() {
@@ -57,6 +59,14 @@ class App extends Component {
   }
 
   render() {
+    let content;
+    if(this.state.loading){
+      content = <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+                </div>
+    }else{
+      content = <Form/>
+    }
     return (
       <div>
         <Navbar account={this.state.account}/>
@@ -64,6 +74,7 @@ class App extends Component {
           <div className="row">
             <main role="main" className="col-lg-12 d-flex text-center">
               <div className="content mr-auto ml-auto">
+                {content}
               </div>
             </main>
           </div>
