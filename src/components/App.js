@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
+import EthSwap from '../abis/EthSwap.json';
+import Token from '../abis/Token.json';
 import Web3 from 'web3';
 import Navbar from './NavBar';
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { account:'', ethBalance:'0' }
+    this.state = { account:'', ethBalance:'0', tokenBalance:'0', token:{}, ether:{} }
   }
 
   // connect App to BlockChain -web3.js
@@ -19,10 +21,27 @@ class App extends Component {
     const web3 = window.web3;
     const accounts = await web3.eth.getAccounts();
     this.setState({account: accounts[0]});
-    console.log(accounts[0])
 
     const ethBalance = await web3.eth.getBalance(this.state.account);
-    this.setState({ ethBalance })
+    this.setState({ ethBalance });
+    // communication layer between contract and js
+
+    // load token contract
+    const networkId = await web3.eth.net.getId();
+    const tokenData = Token.networks[networkId];
+    if(tokenData){
+      const token = new web3.eth.Contract(Token.abi, tokenData.address);
+      this.setState({token});
+      let tokenBalance = await token.methods.balanceOf(this.state.account).call();
+      this.setState({ tokenBalance: tokenBalance.toString()})
+    }
+
+    // load ethSwap contract
+    const ethSwapData = EthSwap.networks[networkId];
+    if(ethSwapData){
+      const ether = new web3.eth.Contract(EthSwap.abi, ethSwapData.address);
+      this.setState({ether});
+    }
   }
 
   async loadWeb3() {
