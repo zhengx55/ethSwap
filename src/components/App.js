@@ -1,21 +1,46 @@
 import React, { Component } from 'react';
-import logo from '../logo.png';
 import './App.css';
+import Web3 from 'web3';
+import Navbar from './NavBar';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { account:'', ethBalance:'0' }
+  }
+
+  // connect App to BlockChain -web3.js
+  async componentWillMount() {
+    await this.loadWeb3();
+    await this.loadBlockChainData();
+  }
+
+  async loadBlockChainData() {
+    const web3 = window.web3;
+    const accounts = await web3.eth.getAccounts();
+    this.setState({account: accounts[0]});
+    console.log(accounts[0])
+
+    const ethBalance = await web3.eth.getBalance(this.state.account);
+    this.setState({ ethBalance })
+  }
+
+  async loadWeb3() {
+    // connect with metamask wallet
+    if (window.ethereum) {
+      window.web3 = new Web3(window.ethereum);
+      await window.ethereum.enable();
+    } else if (window.web3) {
+      window.web3 = new Web3(window.web3.currentProvider);
+    } else {
+      window.alert("Non-Ethereum browser detected.")
+    }
+  }
+
   render() {
     return (
       <div>
-        <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-          <a
-            className="navbar-brand col-sm-3 col-md-2 mr-0"
-            style={{color:"white"}}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            PlayGround
-          </a>
-        </nav>
+        <Navbar account={this.state.account}/>
         <div className="container-fluid mt-5">
           <div className="row">
             <main role="main" className="col-lg-12 d-flex text-center">
